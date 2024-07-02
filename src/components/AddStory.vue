@@ -1,7 +1,7 @@
 <template>
-  <div class="edit-story">
-    <h1>Edit Story</h1>
-    <form @submit.prevent="saveChanges">
+  <div class="add-story">
+    <h1>Add New Story</h1>
+    <form @submit.prevent="addStory">
       <div>
         <label for="title">Title:</label>
         <input type="text" id="title" v-model="story.title" required>
@@ -11,8 +11,16 @@
         <input type="text" id="author" v-model="story.author" required>
       </div>
       <div>
+        <label for="synopsis">Synopsis:</label>
+        <textarea id="synopsis" v-model="story.synopsis" required></textarea>
+      </div>
+      <div>
         <label for="category">Category:</label>
         <input type="text" id="category" v-model="story.category" required>
+      </div>
+      <div>
+        <label for="storyCover">Story Cover (URL):</label>
+        <input type="text" id="storyCover" v-model="story.storyCover" required>
       </div>
       <div>
         <label for="tags">Tags (comma separated):</label>
@@ -30,64 +38,63 @@
         </select>
       </div>
       <div>
-        <button type="submit">Save Changes</button>
+        <button type="submit">Add Story</button>
       </div>
     </form>
   </div>
 </template>
 
 <script>
-import { ref, reactive, onMounted } from "vue";
+import { ref } from "vue";
 import axios from "axios";
 
 export default {
-  name: "EditStory",
+  name: "AddStory",
   setup() {
-    const story = reactive({
-      _id: '',
+    const story = ref({
       title: '',
       author: '',
+      synopsis: '',
       category: '',
+      storyCover: '',
       tags: [],
-      status: ''
+      status: 'Draft'
     });
 
     const tagInput = ref('');
 
-    const fetchStory = async () => {
+    const addStory = async () => {
       try {
-        const response = await axios.get(`https://us-central1-fullstack-api-38a4f.cloudfunctions.net/api/api/stories/${$route.params.id}`);
-        Object.assign(story, response.data);
-      } catch (error) {
-        console.error('Error fetching story:', error);
-      }
-    };
+        // Ensure tags are converted to an array before sending
+        const dataToSend = {
+          ...story.value,
+          tags: story.value.tags.map(tag => tag.trim())
+        };
 
-    const saveChanges = async () => {
-      try {
-        await axios.put(`https://us-central1-fullstack-api-38a4f.cloudfunctions.net/api/api/stories/${story._id}`, story);
+        await axios.post('https://us-central1-fullstack-api-38a4f.cloudfunctions.net/api/api/stories', dataToSend);
         router.push('/'); // Assuming 'router' is imported from Vue Router
       } catch (error) {
-        console.error('Error saving story changes:', error);
+        console.error('Error adding story:', error);
       }
     };
 
     const addTag = () => {
       if (tagInput.value) {
-        story.tags.push(tagInput.value.trim());
+        story.value.tags.push(tagInput.value.trim());
         tagInput.value = '';
       }
     };
 
-    onMounted(fetchStory);
-
     return {
       story,
       tagInput,
-      saveChanges,
+      addStory,
       addTag
     };
   }
 };
 </script>
 
+<style scoped>
+/* Your scoped styles */
+</style>

@@ -1,7 +1,9 @@
 <template>
   <div class="home">
     <h1>List Buku</h1>
-    <router-link to="/create" class="create-link">Tambah Data Cerita</router-link>
+    <router-link to="/create" class="create-link"
+      >Tambah Data Cerita</router-link
+    >
     <table class="stories-table">
       <thead>
         <tr>
@@ -14,7 +16,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="story in stories" :key="story._id">
+        <tr v-for="story in stories" :key="story.id">
           <td>{{ story.title }}</td>
           <td>{{ story.author }}</td>
           <td>{{ story.category }}</td>
@@ -25,10 +27,10 @@
           </td>
           <td>{{ story.status }}</td>
           <td>
-            <router-link :to="`/edit/${story._id}`" class="action-link"
+            <router-link :to="`/edit/${story.id}`" class="action-link"
               >✏️</router-link
             >
-            <button @click="deleteStory(story._id)" class="action-button">
+            <button @click="deleteStory(story.id)" class="action-button">
               🗑️
             </button>
           </td>
@@ -49,16 +51,24 @@ export default {
   },
   methods: {
     async fetchStories() {
-      const response = await axios.get(
-        "https://us-central1-fullstack-api-38a4f.cloudfunctions.net/api/api/stories"
-      );
-      this.stories = response.data;
+      try {
+        const response = await axios.get(
+          "https://us-central1-fullstack-api-38a4f.cloudfunctions.net/api/api/stories"
+        );
+        this.stories = response.data;
+      } catch (error) {
+        console.error("Error fetching stories:", error);
+      }
     },
     async deleteStory(id) {
-      await axios.delete(
-        `https://us-central1-fullstack-api-38a4f.cloudfunctions.net/api/api/stories/${id}`
-      );
-      this.stories = this.stories.filter((story) => story._id !== id);
+      try {
+        await axios.delete(
+          `https://us-central1-fullstack-api-38a4f.cloudfunctions.net/api/api/stories/${id}`
+        );
+        this.stories = this.stories.filter((story) => story.id !== id); // Assuming your API uses 'id'
+      } catch (error) {
+        console.error("Error deleting story:", error);
+      }
     },
   },
   mounted() {
